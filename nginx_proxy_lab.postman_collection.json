@@ -1,0 +1,405 @@
+{
+	"info": {
+		"_postman_id": "c1f7b7e2-45bb-41a3-832f-488cb9f19a0a",
+		"name": "Nginx Reverse Proxy Student Lab",
+		"description": "Postman collection to test the reverse proxy functionality, backend API endpoints, and frontend static assets routing.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Verify Nginx Proxy Health",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Body matches healthy\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"healthy\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{proxy_url}}/health",
+					"host": [
+						"{{proxy_url}}"
+					],
+					"path": [
+						"health"
+					]
+				},
+				"description": "Verifies that the Nginx container is up and handles direct route mapping under `/health` without forwarding."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Verify Backend Health (via Proxy)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Backend is healthy\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).to.eql(\"healthy\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{proxy_url}}/api/health",
+					"host": [
+						"{{proxy_url}}"
+					],
+					"path": [
+						"api",
+						"health"
+					]
+				},
+				"description": "Verifies that requests to `/api/health` are successfully reverse proxied to the Express backend container's health route."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Create Student (via Proxy)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"pm.test(\"Student created successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.data).to.have.property(\"_id\");",
+							"    // Save ID for subsequent tests",
+							"    pm.collectionVariables.set(\"student_id\", jsonData.data._id);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe.proxy.test@example.com\",\n  \"dateOfBirth\": \"2010-05-15\",\n  \"grade\": \"10\",\n  \"section\": \"A\",\n  \"address\": {\n    \"street\": \"123 Main St\",\n    \"city\": \"Springfield\",\n    \"state\": \"IL\",\n    \"zipCode\": \"62701\",\n    \"country\": \"USA\"\n  },\n  \"phoneNumber\": \"+12175550123\",\n  \"emergencyContact\": {\n    \"name\": \"Jane Doe\",\n    \"relationship\": \"Mother\",\n    \"phoneNumber\": \"+12175550124\"\n  },\n  \"gpa\": 3.8\n}"
+				},
+				"url": {
+					"raw": "{{proxy_url}}/api/students",
+					"host": [
+						"{{proxy_url}}"
+					],
+					"path": [
+						"api",
+						"students"
+					]
+				},
+				"description": "Registers a new student through the reverse proxy and extracts the created student ID."
+			},
+			"response": []
+		},
+		{
+			"name": "4. Get All Students (via Proxy)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Returns list of students\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{proxy_url}}/api/students",
+					"host": [
+						"{{proxy_url}}"
+					],
+					"path": [
+						"api",
+						"students"
+					]
+				},
+				"description": "Retrieves the list of all students."
+			},
+			"response": []
+		},
+		{
+			"name": "5. Get Student Stats (via Proxy)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Returns valid stats summary\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.data.totalStudents).to.be.greaterThan(0);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{proxy_url}}/api/students/stats/summary",
+					"host": [
+						"{{proxy_url}}"
+					],
+					"path": [
+						"api",
+						"students",
+						"stats",
+						"summary"
+					]
+				},
+				"description": "Checks database statistics through the proxy routing."
+			},
+			"response": []
+		},
+		{
+			"name": "6. Get Student by ID (via Proxy)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Returns matching student record\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.data._id).to.eql(pm.collectionVariables.get(\"student_id\"));",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{proxy_url}}/api/students/{{student_id}}",
+					"host": [
+						"{{proxy_url}}"
+					],
+					"path": [
+						"api",
+						"students",
+						"{{student_id}}"
+					]
+				},
+				"description": "Retrieves the single student created in Step 3 by its dynamically saved identifier."
+			},
+			"response": []
+		},
+		{
+			"name": "7. Update Student details (via Proxy)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Student updated successfully\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.expect(jsonData.data.section).to.eql(\"B\");",
+							"    pm.expect(jsonData.data.gpa).to.eql(3.9);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe.proxy.test@example.com\",\n  \"dateOfBirth\": \"2010-05-15\",\n  \"grade\": \"10\",\n  \"section\": \"B\",\n  \"address\": {\n    \"street\": \"456 Oak Ave\",\n    \"city\": \"Springfield\",\n    \"state\": \"IL\",\n    \"zipCode\": \"62702\",\n    \"country\": \"USA\"\n  },\n  \"phoneNumber\": \"+12175550123\",\n  \"emergencyContact\": {\n    \"name\": \"Jane Doe\",\n    \"relationship\": \"Mother\",\n    \"phoneNumber\": \"+12175550124\"\n  },\n  \"gpa\": 3.9\n}"
+				},
+				"url": {
+					"raw": "{{proxy_url}}/api/students/{{student_id}}",
+					"host": [
+						"{{proxy_url}}"
+					],
+					"path": [
+						"api",
+						"students",
+						"{{student_id}}"
+					]
+				},
+				"description": "Modifies the section and GPA of the student."
+			},
+			"response": []
+		},
+		{
+			"name": "8. Delete Student (via Proxy)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Successfully deleted\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{proxy_url}}/api/students/{{student_id}}",
+					"host": [
+						"{{proxy_url}}"
+					],
+					"path": [
+						"api",
+						"students",
+						"{{student_id}}"
+					]
+				},
+				"description": "Removes the student record from the system."
+			},
+			"response": []
+		},
+		{
+			"name": "9. Verify Frontend Assets Proxy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Returns index html structure\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"<!doctype html>\");",
+							"    pm.expect(pm.response.text()).to.include(\"id=\\\"root\\\"\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{proxy_url}}/",
+					"host": [
+						"{{proxy_url}}"
+					],
+					"path": [
+						""
+					]
+				},
+				"description": "Checks if the Nginx reverse proxy routes traffic for the root `/` to the static frontend container, returning the React app HTML shell."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "proxy_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "student_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

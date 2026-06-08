@@ -1,62 +1,59 @@
-version: "3.8"
-
 services:
-  # MongoDB Database
   mongodb:
-    image: mongo:6
+    image: mongo:7
     container_name: student-mongodb
     restart: unless-stopped
-    environment:
-      MONGO_INITDB_DATABASE: studentdb
+    environment: 
+      MONGO-INITDB-DATABASE: studentdb
     ports:
-      - "27017:27017"
+      - '27017:27017'
     volumes:
       - mongodb_data:/data/db
     networks:
       - student-network
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "--eval" , "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
 
-  # Backend API Service
   backend:
     build: ./backend
+    image: js55998/student-backend
     container_name: student-backend
     restart: unless-stopped
-    environment:
+    environment: 
       NODE_ENV: production
       PORT: 5000
       MONGODB_URI: mongodb://mongodb:27017/studentdb
-      CORS_ORIGIN: http://localhost:8080
+      CROS_ORIGIN: http://localhost:8080
     ports:
-      - "5000:5000"
-    depends_on:
+      - '5000:5000'
+    depends_on: 
       mongodb:
         condition: service_healthy
     networks:
       - student-network
-
-  # Frontend React App
+    
+    
   frontend:
     build: ./frontend
+    image: js55998/student-frontend
     container_name: student-frontend
     restart: unless-stopped
     ports:
-      - "80:80"
-    depends_on:
+      - '80:80'
+    depends_on: 
       - backend
     networks:
       - student-network
-
-  # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
     container_name: student-nginx
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - '8080:80'
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -70,5 +67,7 @@ networks:
     driver: bridge
 
 volumes:
-  mongodb_data:
+  mongodb_data: 
     driver: local
+
+
