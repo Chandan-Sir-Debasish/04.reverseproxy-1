@@ -4,7 +4,7 @@ A production-ready MERN stack application built with a microservices-style archi
 
 ---
 
-## 🏗️ Architecture & Request Flow
+## Architecture and Request Flow
 
 The system is containerized using Docker and organized under a single bridge network (`student-network`). The Nginx reverse proxy acts as the entry point for all traffic, routing requests dynamically based on URL patterns.
 
@@ -12,13 +12,13 @@ The system is containerized using Docker and organized under a single bridge net
 
 ```mermaid
 graph TD
-    Client["Client Browser<br>(Requests on Port 8080)"] -->|HTTP / WebSockets| Nginx["Nginx Reverse Proxy<br>(Container: student-nginx, Port 80)"]
+    Client["Client Browser (Requests on Port 8080)"] -->|"HTTP / WebSockets"| Nginx["Nginx Reverse Proxy (Container: student-nginx, Port 80)"]
     
     subgraph "Docker Virtual Network (student-network)"
-        Nginx -->|/api/* requests| Backend["Express API Server<br>(Container: student-backend, Port 5000)"]
-        Nginx -->|/ (Static Assets)| Frontend["Nginx Static Server<br>(Container: student-frontend, Port 80)"]
-        Nginx -.->|/health<br>(Direct Response)| Nginx
-        Backend -->|Mongoose DB Operations| MongoDB[("MongoDB Database<br>(Container: student-mongodb, Port 27017)")]
+        Nginx -->|"/api/* requests"| Backend["Express API Server (Container: student-backend, Port 5000)"]
+        Nginx -->|"/ (Static Assets)"| Frontend["Nginx Static Server (Container: student-frontend, Port 80)"]
+        Nginx -.->|"/health direct response"| Nginx
+        Backend -->|"Mongoose DB Operations"| MongoDB["MongoDB Database (Container: student-mongodb, Port 27017)"]
     end
 ```
 
@@ -27,7 +27,7 @@ graph TD
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Client as Client Browser
+    participant Client as Client Browser
     participant Proxy as Nginx Proxy (:8080)
     participant Front as Frontend App (:80)
     participant Back as Backend API (:5000)
@@ -54,7 +54,7 @@ sequenceDiagram
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 3.ReverseProxy-1/
@@ -111,7 +111,7 @@ sequenceDiagram
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **Frontend**: React 19, Vite 8, Axios, Vanilla CSS (harmonious color variables, responsive grid system)
 - **Backend**: Node.js, Express.js (Express 5), Mongoose ODM (Mongoose 9)
@@ -123,7 +123,7 @@ sequenceDiagram
 
 ---
 
-## ✨ Features
+## Features
 
 - **Automated Student ID Generation**: Pre-save hook automatically computes year-based IDs (`STU202600001`, `STU202600002`).
 - **Comprehensive Profiles**: Collects student information, full nested address, emergency contacts, GPA, courses enrollment list, and student status.
@@ -133,7 +133,7 @@ sequenceDiagram
 
 ---
 
-## ⚙️ Configuration & Environment Variables
+## Configuration and Environment Variables
 
 ### Backend Environment Config
 The backend expects the following variables, configured in [backend/.env](file:///d:/devops-labs/ngnix-lab/3.ReverseProxy-1/backend/.env) (Docker production) and [backend/.env.dev](file:///d:/devops-labs/ngnix-lab/3.ReverseProxy-1/backend/.env.dev) (Local node development):
@@ -149,7 +149,7 @@ The backend expects the following variables, configured in [backend/.env](file:/
 
 ---
 
-## 🚀 Installation & Running the Application
+## Installation and Running the Application
 
 ### Option A: Running with Docker Compose (Recommended)
 
@@ -225,7 +225,7 @@ Ensure MongoDB is installed and running on your local machine on port `27017`.
 
 ---
 
-## 📡 API Endpoints Reference
+## API Endpoints Reference
 
 All API endpoints reside behind the `/api` prefix (routed through Nginx or Vite Proxy).
 
@@ -246,7 +246,7 @@ All API endpoints reside behind the `/api` prefix (routed through Nginx or Vite 
 
 ---
 
-## 🧪 Testing & Verification
+## Testing and Verification
 
 A Postman collection is included in the workspace to assist in testing Nginx routing, proxy rules, and backend controllers.
 
