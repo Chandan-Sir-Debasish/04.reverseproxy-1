@@ -11,6 +11,9 @@ dotenv.config();
 
 const app = express();
 
+// Enable trust proxy to allow express-rate-limit to read X-Forwarded-For headers
+app.set("trust proxy", 1);
+
 // Log environment
 console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
 console.log(
